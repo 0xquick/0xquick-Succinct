@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="game.js"></script>
+    <script type="module">
+       import init, { generate_proof } from "./pkg/sp1_wasm.js";
+
+    async function loadSP1() {
+        await init();  // Ensure WASM is loaded
+    }
+    loadSP1();
+
+    </script>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #fce4ec;
+            color: #880e4f;
+        }
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            background: #f06292;
+            padding: 5px;
+            border-radius: 5px;
+            width: max-content;
+            margin: auto;
+        }
+        .mine-count, .timer {
+            font-size: 1em;
+            color: #ffffff;
+            background: #f06292;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .emoji-button {
+            background: #fae1eb;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;  /* Adjust as needed */
+            height: 35px;
+        }
+        #resetImage {
+            width: 28px; /* Smaller size */
+            height: 28px;
+            object-fit: contain;
+        }
+        .difficulty-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px;
+        }
+        .difficulty {
+            font-size: 1em;
+            cursor: pointer;
+            color: #ff33cc;
+        }
+        .difficulty.active {
+            font-weight: bold;
+            color: #ff1493;
+        }
+        /* Game Canvas Styling */
+
+        #gameContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        padding: 20px;
+        border: 2px solid #fae1eb; /* Pink border */
+        border-radius: 15px;
+        box-shadow: 0px 4px 20px rgba(233, 30, 99, 0.3);
+        max-width: 600px;
+        margin: auto;
+        }
+
+#gameCanvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 400px;
+    height: 400px;
+    background: #fae1eb;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Board Styling */
+.board {
+    display: grid;
+    grid-gap: 3px;
+    background: #ddd;
+    padding: 10px;
+    border-radius: 10px;
+    width: max-content;
+    margin: 20px auto;
+}
+
+/* Cell Styling */
+.cell {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    background: #fef6fc; 
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.1s;
+}
+
+/* Revealed Cell */
+.cell.revealed {
+    background: #fae1eb; /* Soft pink background */
+    border: 1px solid #d6a5c0;
+}
+
+/* Mine Styling */
+.cell.mine {
+    background: #ffb3c1;
+    color: #fff;
+}
+#gameOverPopup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff92;
+    color: #e91e63;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 20px rgba(233, 30, 99, 0.3);
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+    font-family: Arial, sans-serif;
+}
+
+/* Title */
+#gameOverPopup h3 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Score Text */
+#gameOverPopup p {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+/* Buttons Styling */
+#gameOverPopup button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+/* Confirm Score Button */
+#confirmScore {
+    background: #f06292;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 25px;
+    font-size: 0.8em;
+}
+
+/* Try Again Button */
+#restartButton {
+    background: #d81b60;
+    color: #fff;
+    border: none;
+}
+
+/* Share on X Button */
+#shareButton {
+    background: transparent;
+    color: #e91e63;
+    border: 2px solid #e91e63;
+}
+#howToPlayContainer {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Header (collapsible button) */
+#howToPlayHeader {
+    background: #ffe3f0;
+    color: #555;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 12px 15px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+/* Content */
+#howToPlayContent {
+    background: #fce4ec;
+    color: #888;
+    margin-top: 10px;
+    padding: 15px;
+    font-size: 1em;
+    border-radius: 10px;
+    display: none; /* Initially hidden */
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+#howToPlayContent p {
+    font-size: 1em;
+    margin: 8px 0;
+}
+
+/* Rotate Icon When Open */
+.rotate {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+
+
+.disabled {
+    pointer-events: none;
+}
+ /* Notification Container */
+ .notification {
+            position: fixed;
+            top: 20px;
+            right: -400px; /* Starts off-screen */
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            width: 320px;
+            max-width: 90%;
+            font-family: Arial, sans-serif;
+            transition: right 0.5s ease-out;
+        }
+
+        /* Icon */
+        .notification-icon {
+            width: 35px;
+            height: 35px;
+            margin-right: 10px;
+        }
+
+        /* Text */
+        .notification-text {
+            flex-grow: 1;
+        }
+
+        .notification-text strong {
+            font-size: 1em;
+            color: #000;
+        }
+
+        .notification-text p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        /* Close Button */
+        .close-notification {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-notification:hover {
+            color: #e91e63;
+        }
+
+        
+        
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div class="header">
+            <div class="mine-count" id="mineCount">010</div>
+            <button class="emoji-button" id="resetButton">
+                <img src="src/succinct-icon-arcade.svg" alt="Reset" id="resetImage">
+            </button>
+            <div class="timer" id="timerID">000</div>
+        </div>
+        
+        <div class="difficulty-container">
+            <span class="difficulty active" id="beginner" onclick="setDifficulty('beginner')">Beginner</span>
+            <span class="difficulty" id="intermediate" onclick="setDifficulty('intermediate')">Intermediate</span>
+            <span class="difficulty" id="expert" onclick="setDifficulty('expert')">Expert</span>
+        </div>
+        <div class="board" id="board"></div>
+        <!-- <button class="prove-button" id="proveButton" onclick="proveScore()"></button> -->
+
+        <div id="howToPlayContainer">
+            <div id="howToPlayHeader" onclick="toggleHowToPlay()">
+                <span>How to Play</span>
+                <span id="toggleIcon">▼</span> <!-- Down Arrow Initially -->
+            </div>
+            <div id="howToPlayContent">
+                <p><strong>How to play:</strong> Click on a cell to reveal it.</p>
+                <p><strong>Avoid</strong> the mines! If you click on a mine, the game is over.</p>
+                <p>Use **quick strategy** to avoid mines and clear the board.</p>
+                <p><strong>Goal:</strong> Clear all safe tiles without hitting a mine.</p>
+            </div>
+        </div>
+        <!-- Notification Banner -->
+        <div id="notificationBanner" class="notification">
+            <img src="src/succinct-icon-arcade.svg" alt="Succinct Logo" class="notification-icon">
+            <div class="notification-text">
+                <strong>Minesweeper</strong>
+                <p id="notificationMessage">Successfully confirmed a score of 0!</p>
+            </div>
+            <button class="close-notification" onclick="closeNotification()">✕</button>
+        </div>
+        
+        
+    </div>
+</body>
+</html>

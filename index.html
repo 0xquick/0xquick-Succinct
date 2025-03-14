@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Succinct | Crisis of Trust</title>
+        <script type="module" src="game.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: url('src/os-background.png') no-repeat center center fixed;           
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .menu-bar {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to bottom, #f5f5f5, #dcdcdc);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .menu-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 10px;
+        }
+        .star-badge {
+            display: flex;
+            align-items: center;
+            background: #ff66cc;
+            color: white;
+            padding: 2px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        #clock {
+            padding-left: 5px;  /* Adds spacing to the left of the clock */
+            padding-right: 20px; /* Adds extra space after the hours */
+        }
+
+        .menu-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .dock {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.dock-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dock img {
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    border-radius: 10px;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.dock img:hover {
+    transform: scale(1.2);
+}
+
+/* Tooltip styling */
+.dock-tooltip {
+    position: absolute;
+    bottom: 70px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Show tooltip on hover */
+.dock-item:hover .dock-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+        /* Active effect */
+        .dock-item.active {
+            transform: scale(1.2); /* Slight zoom effect */
+        }
+
+        .desktop-icons {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .desktop-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .desktop-item img {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+        .icon-label {
+            margin-top: 5px;
+            font-size: 12px;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .window {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 600px;
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            border: 1px solid #ccc;
+            transition: opacity 0.3s ease-in-out;
+            margin: 30px;
+        }
+        .window-header {
+            background: linear-gradient(to bottom, #d1d1d1, #b0b0b0);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .window-controls {
+            position: absolute;
+            left: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .window-controls div {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-size: cover;
+            transition: background 0.2s ease-in-out;
+        }
+        /* Default macOS-style button colors */
+        .close-btn { background: red; }
+        .minimize-btn { background: orange; }
+        .maximize-btn { background: green; }
+        
+        /* Hover effect: Replace with correct Mac-style icons */
+        .close-btn:hover { background: url('https://upload.wikimedia.org/wikipedia/commons/8/8f/MacOS_Close.png') center/cover; }
+        .minimize-btn:hover { background: url('https://upload.wikimedia.org/wikipedia/commons/1/1c/MacOS_Minimize.png') center/cover; }
+        .maximize-btn:hover { background: url('https://upload.wikimedia.org/wikipedia/commons/5/5a/MacOS_Maximize.png') center/cover; }
+
+        .window-title {
+            font-weight: bold;
+            color: black;
+        }
+        .window-content {
+            /* padding: 10px; */
+            flex-grow: 1;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="menu-left">
+            <img src="src/succinct-icon-arcade.svg" class="menu-icon">
+
+            <span id="menu-title" class="menu-title"></span>
+            <span>File</span>
+            <span>Edit</span>
+            <span>View</span>
+        </div>
+        <div class="menu-right">
+            <span class="star-badge">⭐ <span id="stars"> 0 </span></span>
+            Balance: <span id="balance">13.00 Credits</span>
+            🔋 📶 🔊
+            <span id="clock"></span>
+        </div>
+        
+        
+    </div>
+
+    <div id="macWindow" class="window">
+        <div class="window-header">
+            <div class="window-controls">
+                <div class="close-btn" onclick="closeWindow()"></div>
+                <div class="minimize-btn" onclick="minimizeWindow()"></div>
+                <div class="maximize-btn" onclick="maximizeWindow()"></div>
+            </div>
+            <div id="window-title">Mac Window</div>
+        </div>
+        <div class="window-content">
+            <iframe id="windowFrame" src="" width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <div class="dock">
+        <div class="dock-item" data-label="Finder">
+            <img src="src/finder-app.svg" onclick="openWindow('Finder', this)" alt="Finder">
+            <span class="dock-tooltip"></span>
+        </div>
+        <div class="dock-item" data-label="Succinct">
+            <img src="src/arcade-app.svg" onclick="openWindow('Succinct', this)" alt="Succinct">
+            <span class="dock-tooltip"></span>
+        </div>
+        <div class="dock-item" data-label="Safari">
+            <img src="src/succinct-app.svg" onclick="openWindow('Safari', this)" alt="Safari">
+            <span class="dock-tooltip"></span>
+        </div>
+        <div class="dock-item" data-label="Snake">
+            <img src="src/snake.png" onclick="openWindow('Snake', this)" alt="Snake">
+            <span class="dock-tooltip"></span>
+        </div>
+        <div class="dock-item" data-label="Minesweeper">
+            <img src="src/minesweeper.png" onclick="openWindow('Minesweeper', this)" alt="Minesweeper">
+            <span class="dock-tooltip"></span>
+        </div>
+    </div>
+    
+    
+
+    <div class="desktop-icons">
+        <div class="desktop-item">
+            <img src="src/steve.webp" onclick="openWindow('Steve.jpg')" alt="Steve.jpg">
+            <span class="icon-label">Steve.jpg</span>
+        </div>
+        <div class="desktop-item">
+            <img src="src/pdf-app.webp" onclick="openWindow('SP1.pdf')" alt="SP1.pdf">
+            <span class="icon-label">SP1.pdf</span>
+        </div>
+        <div class="desktop-item">
+            <img src="src/leaderboard-app.svg" onclick="openWindow('Leaderboard')" alt="Leaderboard">
+            <span class="icon-label">Leaderboard</span>
+        </div>
+        <div class="desktop-item">
+            <img src="src/start_here.webp" onclick="openWindow('start_here.jpg')" alt="start_here.jpg">
+            <span class="icon-label">start_here.jpg</span>
+        </div>
+        <div class="desktop-item">
+            <img src="src/audio-app.webp" onclick="openWindow('Prove.mp3')" alt="Prove.mp3">
+            <span class="icon-label">Prove.mp3</span>
+        </div>
+    </div>
+    <script>
+
+        function openWindow(name,element) {
+            if (name == "Minesweeper" || name == "Snake"){
+                document.getElementById("menu-title").innerText = name;
+                document.getElementById("window-title").innerText = name; // Change title to file name
+                document.getElementById("windowFrame").src = name.toLowerCase() +".html"; // Load the selected HTML file
+                document.getElementById("macWindow").style.display = "flex"; // Show the window
+            }else{
+                document.getElementById("windowFrame").src = ""
+                document.getElementById("menu-title").innerText = name;
+                document.getElementById("window-title").innerText = name;
+            }
+            const win = document.getElementById("macWindow");
+            win.style.display = "flex";
+            win.style.opacity = "1";
+
+            // Remove 'active' class from all dock items
+            document.querySelectorAll(".dock-item").forEach(img => img.classList.remove("active"));
+
+            // Add 'active' class to the clicked item
+            element.classList.add("active");
+           
+        }
+
+        
+
+        function closeWindow() {
+            const win = document.getElementById("macWindow");
+            win.style.opacity = "0";
+            setTimeout(() => {
+                win.style.display = "none";
+                document.getElementById("menu-title").innerText = "";
+            }, 300);
+        }
+
+        function minimizeWindow() {
+            document.getElementById("macWindow").style.display = "none";
+        }
+
+        function maximizeWindow() {
+            const win = document.getElementById("macWindow");
+            if (win.style.width === "100vw") {
+                win.style.width = "400px";
+                win.style.height = "300px";
+                win.style.top = "50%";
+                win.style.left = "50%";
+                win.style.transform = "translate(-50%, -50%)";
+            } else {
+                win.style.width = "100vw";
+                win.style.height = "100vh";
+                win.style.top = "0";
+                win.style.left = "0";
+                win.style.transform = "none";
+            }
+        }
+        function updateClock() {
+            let now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12 || 12;
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("clock").innerText = `Tue ${hours}:${minutes} ${ampm}`;
+        }
+
+        document.querySelectorAll('.dock-item').forEach(item => {
+            const tooltip = item.querySelector('.dock-tooltip');
+            tooltip.textContent = item.getAttribute('data-label'); // Set the tooltip text
+
+            item.addEventListener('mouseenter', () => {
+                tooltip.style.opacity = '1';
+                tooltip.style.transform = 'translateY(0)';
+            });
+
+            item.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+                tooltip.style.transform = 'translateY(10px)';
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let stars = localStorage.getItem("stars");
+            let balance = localStorage.getItem("balance");
+
+            if (stars) {
+                document.getElementById('stars').innerText = ''; // Clears the previous text
+                document.getElementById('stars').innerText = stars; // Sets the new value
+
+            }
+            if (balance) {
+                document.getElementById('balance').innerText = balance + " Credits";
+            }
+             
+        });
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>

@@ -1,8 +1,18 @@
 # **🚀 Minesweeper SP1 - Open Source Project**  
 
 A modern **Minesweeper game** integrated with **SP1 Zero-Knowledge Proofs** for score verification, designed with a **MacOS-inspired UI**.  
+## 🎮 General Project Demo
 
-![Minesweeper Preview](https://github.com/user-attachments/assets/66dbc602-43b0-4f01-bea6-23f227c267f3)  
+<p>
+  <img src="src/0xquick.gif" alt="General Project Demo" width="400"/>
+</p> 
+
+## 🎮 Minesweeper Demo
+
+<p>
+  <img src="src/minesweeper.gif" alt="Minesweeper Demo" width="400"/>
+</p>
+
 
 ---
 

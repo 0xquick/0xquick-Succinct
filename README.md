@@ -2,7 +2,7 @@
 
 A modern **Minesweeper game** integrated with **SP1 Zero-Knowledge Proofs** for score verification, designed with a **MacOS-inspired UI**.  
 
-![Minesweeper Preview](./assets/minesweeper-preview.png)  
+![Minesweeper Preview](https://github.com/user-attachments/assets/66dbc602-43b0-4f01-bea6-23f227c267f3)  
 
 ---
 

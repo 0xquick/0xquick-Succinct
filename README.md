@@ -2,7 +2,7 @@
 
 A modern **Minesweeper game** integrated with **SP1 Zero-Knowledge Proofs** for score verification, designed with a **MacOS-inspired UI**.  
 ## 🎮 General Project Demo
-
+https://0xquick.vercel.app/
 <p>
   <img src="src/0xquick.gif" alt="General Project Demo" width="400"/>
 </p> 
